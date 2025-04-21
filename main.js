@@ -5,6 +5,8 @@ const mongoose = require("mongoose"); // Ajout de Mongoose
 const homeController = require("./controllers/homeController"); 
 const errorController = require("./controllers/errorController"); 
 const subscriberController = require("./controllers/subscriberController"); 
+const usersController = require("./controllers/usersController"); 
+const coursesController = require("./controllers/coursesController");
 // Configuration de la connexion à MongoDB 
 mongoose.connect( 
   "mongodb://localhost:27017/ai_academy", 
@@ -33,6 +35,11 @@ express.urlencoded({
 extended: false 
 }) 
 ); 
+// Ajouter le middleware method-override 
+const methodOverride = require("method-override"); 
+app.use(methodOverride("_method", { 
+methods: ["POST", "GET"] 
+}));
 app.use(express.json());// Servir les fichiers statiques 
 app.use(express.static("public")); 
 app.use((req, res, next) => {
@@ -48,7 +55,7 @@ app.use((req, res, next) => {
 // Définir les routes 
 app.get("/", homeController.index); 
 app.get("/about", homeController.about); 
-app.get("/courses", homeController.courses); 
+//app.get("/courses", homeController.courses); 
 app.get("/contact", homeController.contact); 
 app.post("/contact", homeController.processContact); 
 app.get("/subscribers", subscriberController.getAllSubscribers); 
@@ -62,7 +69,24 @@ app.get("/faq", homeController.faq);
 app.get("/thanks", (req, res) => {
     res.render("thanks", { pageTitle: "Merci", formData: req.session.formData || {} });
   });
-  
+
+  // Routes pour les utilisateurs 
+app.get("/users", usersController.index, usersController.indexView); 
+app.get("/users/new", usersController.new); 
+app.post("/users/create", usersController.create, usersController.redirectView); 
+app.get("/users/:id", usersController.show, usersController.showView); 
+app.get("/users/:id/edit", usersController.edit); 
+app.put("/users/:id/update", usersController.update, usersController.redirectView); 
+app.delete("/users/:id/delete", usersController.delete, usersController.redirectView); 
+// Routes pour les cours 
+app.get("/courses", coursesController.index, coursesController.indexView); 
+app.get("/courses/new", coursesController.new); 
+app.post("/courses/create", coursesController.create, coursesController.redirectView); 
+app.get("/courses/:id", coursesController.show, coursesController.showView); 
+app.get("/courses/:id/edit", coursesController.edit); 
+app.put("/courses/:id/update", coursesController.update, coursesController.redirectView); 
+app.delete("/courses/:id/delete", coursesController.delete, coursesController.redirectView); 
+
 // Gestion des erreurs 
 app.use(errorController.pageNotFoundError); 
 app.use(errorController.internalServerError); 
